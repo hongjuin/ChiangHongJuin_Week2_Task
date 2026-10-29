@@ -1,0 +1,52 @@
+from ultralytics import YOLO
+import cv2
+
+
+
+# YOLO training
+train_yolo= YOLO ('yolo11n.pt')
+train_model= train_yolo.train (
+                                data= r"C:\Users\acer\Downloads\Cybertron_training\Week2_task\household_items-7\data.yaml",
+                                epochs= 50,
+                                imgsz= 650,
+                                batch= 8,
+                                device= 'cpu',
+                                workers= 5
+)
+
+# Main code
+camera= cv2.VideoCapture (0)
+yolo= YOLO (r"C:\Users\acer\Downloads\Cybertron_training\Week2_task\code\runs\detect\train\weights\last.pt")
+while True:
+    ret, frame= camera.read ()
+    if not ret:
+        break
+    count= 0
+    model= yolo.predict (frame, conf= 0.7)
+    result= model [0]
+    for box in result.boxes:
+        # Get object coordinates.
+        x1,y1,x2,y2= map (int, box.xyxy [0])
+        # Get object class
+        class_id= int (box.cls[0])
+        class_name= yolo.names [class_id]
+        # Get confidence score
+        confidence= box.conf [0]
+        # Draw bounding box
+        cv2.rectangle (frame, (x1,y1), (x2, y2), (0,255,0), 2)
+        # Assign label to bounding box
+        label= f'{class_name}, confidence: {confidence:.2f}'
+        cv2.putText (frame, label, (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,0,0), 2)
+        count+= 1
+    # Check whether object has been detected.
+    if count== 0:
+       cv2.putText (frame, "No household items detected", (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 2)
+    else:
+        cv2.putText (frame, f'Household items detected: {count}', (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,0,0), 2)
+    # Display frame
+    cv2.imshow ('Frame', frame)
+    if cv2.waitKey (1)== ord ('q'):
+       break
+
+camera.release ()
+cv2.destroyAllWindows ()
