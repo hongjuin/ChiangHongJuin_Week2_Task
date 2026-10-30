@@ -15,7 +15,7 @@ train_model= train_yolo.train (
 )
 
 # Main code
-  camera= cv2.VideoCapture (0)
+camera= cv2.VideoCapture (0)
 yolo= YOLO (r"C:\Users\acer\Downloads\Cybertron_training\Week2_task\code\runs\detect\train\weights\last.pt")
 while True:
     ret, frame= camera.read ()
